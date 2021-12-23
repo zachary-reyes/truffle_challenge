@@ -2,5 +2,5 @@ const MyToken = artifacts.require('MyToken');
 
 module.exports = async function (deployer) {
   endTime = Date.now();
-  await deployer.deploy(MyToken, endTime);
+  await deployer.deploy(MyToken, endTime).then(() => console.log(MyToken.address));
 };
