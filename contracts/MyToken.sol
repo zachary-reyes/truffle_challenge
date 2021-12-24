@@ -11,27 +11,30 @@ contract MyToken is ERC20 {
     uint256 public startTime;
     uint256 public endTime;
 
+    event Minted();
+
     constructor(uint256 _startTime, uint256 _endTime) ERC20('Zarface', 'ZAR') {
         startTime = _startTime;
         endTime = _endTime;
-        
-        _mint(msg.sender, 1000000 * 10 ** decimals());
     }
 
-    /// @notice Override transfer function to only be callable during
-    ///         specified time 
-    /// @dev Would have used beforeTokenTransfer hook but then wouldn't be 
-    ///      be able to premint supply...next time allowing minting from 
-    ///      the contributions contract may be a better approach.
-    /// @param to Address tokens should be transferred to 
-    /// @param amount # of tokens to be transferred
-    /// @return True if transfer successful, revert if condition is not met
-    function transfer(address to, uint amount) 
-      public override(ERC20) returns (bool)
+    /// @notice allow users to mint ZAR token
+    /// @param account that tokens should be transferred to
+    /// @param amount to be transferred to account
+    function mint(address account, uint256 amount) public {
+        _mint(account, amount);
+        emit Minted();
+    }
+
+    /// @notice checks start and end time constraints before any transfers
+    /// @param from zero address, as specified in ERC20 _mint()
+    /// @param to address specified in mint()
+    /// @param amount specified in mint()
+    function _beforeTokenTransfer(address from, address to, uint256 amount) 
+      internal virtual override
     {
-      require(hasStarted() && !hasEnded());
-      super.transfer(to, amount);
-      return true;
+      super._beforeTokenTransfer(from, to, amount);
+      require(hasStarted() && !hasEnded());    
     }
 
     /// @notice compares call time to startTime
